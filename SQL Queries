@@ -1,0 +1,121 @@
+SQL QUERIES 
+
+1.
+Select
+ city_name,
+count(trip_id) as total_trips ,
+round(sum(fare_amount)/sum(distance_travelled_km),2) as avg_fare_per_km,
+round(sum(fare_amount)/count(trip_id),2) as avg_fare_per_trip,
+concat(round(count(trip_id)/(select count(trip_id) from fact_trips)*100,2),"%") as contribution_pct_to_total_trips
+from fact_trips 
+join dim_city 
+using(city_id)
+group by city_name;
+
+
+2.
+with cte as
+ ( select trips_db.fact_trips.city_id as city_id, 
+trips_db.dim_city.city_name as city_name, 
+month(trips_db.fact_trips.date)as dt,
+ monthname(trips_db.fact_trips.date) as month_name,
+ count(trips_db.fact_trips.trip_id) as actual_trips
+ from trips_db.dim_city
+  join trips_db.fact_trips 
+on trips_db.dim_city.city_id=trips_db.fact_trips.city_id
+join targets_db.monthly_target_trips
+on trips_db.fact_trips.city_id=targets_db.monthly_target_trips.city_id 
+and month(trips_db.fact_trips.date) = month(targets_db.monthly_target_trips.month)
+group by 1,2,3,4)
+select cte.city_name, cte.month_name, cte.actual_trips, sum(targets_db.monthly_target_trips.total_target_trips) as target_trips,
+Case
+when cte.actual_trips >= sum(targets_db.monthly_target_trips.total_target_trips) then "Above Target“
+else "Below Target“
+end as performance_status,
+concat(round(cte.actual_trips-sum(targets_db.monthly_target_trips.total_target_trips))/sum(targets_db.monthly_target_trips.total_target_trips)*100,2),"%") as difference_pct
+from targets_db.monthly_target_tripsjoin cte
+on targets_db.monthly_target_trips.city_id=cte.city_id and month(targets_db.monthly_target_trips.month) = cte.dt
+group by cte.city_id , cte.dt , cte.month_name;
+
+
+3.
+select c.city_name,
+ round(sum(case when r.trip_count = '2-trips' then r.repeat_passenger_count else 0 end)/sum(r.repeat_passenger_count)*100,2) as 2_trips,
+round(sum(case when r.trip_count = '3-trips' then r.repeat_passenger_count else 0 end)/sum(r.repeat_passenger_count)*100,2) as 3_trips
+,round(sum(case when r.trip_count = '4-trips' then r.repeat_passenger_count else 0 end)/sum(r.repeat_passenger_count)*100,2) as 4_trips,
+round(sum(case when r.trip_count = '5-trips' then r.repeat_passenger_count else 0 end)/sum(r.repeat_passenger_count)*100,2) as 5_trips,
+round(sum(case when r.trip_count = '6-trips' then r.repeat_passenger_count else 0 end)/sum(r.repeat_passenger_count)*100,2) as 6_trips,
+ round(sum(case when r.trip_count = '7-trips' then r.repeat_passenger_count else 0 end)/sum(r.repeat_passenger_count)*100,2) as 7_trips,
+round(sum(case when r.trip_count = '8-trips' then r.repeat_passenger_count else 0 end)/sum(r.repeat_passenger_count)*100,2) as 8_trips
+,round(sum(case when r.trip_count = '9-trips' then r.repeat_passenger_count else 0 end)/sum(r.repeat_passenger_count)*100,2) as 9_trips,
+round(sum(case when r.trip_count = '10-trips' then r.repeat_passenger_count else 0 end)/sum(r.repeat_passenger_count)*100,2) as 10_trips 
+from dim_repeat_trip_distribution r
+ join dim_city c on r.city_id = c.city_id
+ group by c.city_name 
+order by c.city_name; 
+
+
+4.
+select  city_name , 
+sum(new_passengers) as total_new_passengers
+ from dim_city c
+  join fact_passenger_summary f 
+on f.city_id = c.city_id
+ group by f.city_id
+  order by total_new_passengers
+ desc limit 3)
+ union 
+(select  city_name , 
+sum(new_passengers) as total_new_passengers 
+from dim_city c
+  join fact_passenger_summary f 
+on f.city_id = c.city_id 
+group by f.city_id  
+order by total_new_passengers
+ asc  limit 3);
+
+
+5.
+with monthly_revenue as
+ ( select c.city_name,
+ monthname(ft.date) as month, 
+sum(ft.fare_amount) as monthly_revenue
+ from fact_trips ft
+ join dim_city c
+ on ft.city_id = c.city_id
+ group by c.city_name , monthname(ft.date)),
+ total_revenue as ( select city_name ,  sum(monthly_revenue) as total_revenue
+ from monthly_revenue 
+group by city_name) 
+select mr.city_name , mr.month as highest_revenue_month , mr.monthly_revenue as revenue, round((mr.monthly_revenue/tr.total_revenue)*100,2) as percentage_contribution 
+from monthly_revenue mr
+ join total_revenue tr 
+on mr.city_name = tr.city_name 
+where mr.monthly_revenue=(select max(monthly_revenue)
+ from monthly_revenue
+ where city_name=mr.city_name) 
+order by mr.city_name;
+
+
+6.
+with cte as 
+( select city_name,
+ city_id,
+ month(month) as month, 
+monthname(month) as months,
+ sum(total_passengers) as total_passengers,
+ sum(repeat_passengers) as repeat_passengers 
+ from fact_passenger_summary
+ join dim_city
+ using (city_id)
+ group by 1,2,3,4
+ order by 1 asc , 3 asc) 
+select cte.city_name,
+ cte.months,
+ cte.total_passengers, 
+cte.repeat_passengers,
+ concat(round(cte.repeat_passengers/(cte.total_passengers)*100,2),"%") as monthly_repeat_passenger_rate, concat(round(cte.repeat_passengers/(sum(cte.total_passengers))*100,2),"%") as city_repeat_passenger_rate from cte
+ join fact_passenger_summary 
+on cte.city_id= fact_passenger_summary.city_id
+ group by 1,2,3,4 ,cte.month 
+order by 1 asc , cte.month; 
