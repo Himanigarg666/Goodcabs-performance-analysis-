@@ -4,19 +4,20 @@ Goodcabs is a company which provide cab services to consumer and active in teir 
 
 So , they want to analysis the performance of goodcabs .
 
-Objective:-
+2024 Goals :-
 
-• Increase consumer satisfaction
+Increase trip volume .
 
-•Increase trips
+Improve passengers  satisfaction .
+
+Boost repeat passenger rate .
+
+Optimize trip distribution .
+
+Balance new and repeat passengers
 
 
-
-
-
-
-
-These are objective set by the Goodcabs company. So to analyse the performance of Goodcabs , they take help of senior data analyst tony sharma , but he is busy , so he assist this task to junior Data analyst Peter Pandey .
+These are 2024 Goal set by the Goodcabs company. So to analyse the performance of Goodcabs , they take help of senior data analyst tony sharma , but he is busy , so he assist this task to junior Data analyst Peter Pandey .
 
 Peter Pandey has given task to start analysing by taking help of primary and secondary question.
 
