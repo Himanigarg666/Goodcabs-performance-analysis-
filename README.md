@@ -21,8 +21,10 @@ These are 2024 Goal set by the Goodcabs company. So to analyse the performance o
 
 Peter Pandey has given task to start analysing by taking help of primary and secondary question.
 
-Live Dashboard Link:-https://app.powerbi.com/groups/a8c24873-6279-4823-8e43-1cf65d9ec5f3/reports/570bfd83-9e90-438b-b3d4-cbe515f2bdf4/5eef1e60c06db1b02b08?experience=power-b
-
 Mr.Bruce Haryali , chief operation officer also give ad-hoc request to execute .
 
 I complete this task taken as a resume codebasics challenge 13 and execute ad-hoc request and make Goodcabs report and also give answer to primary and secondary questions.
+
+
+Live Dashboard Link:-https://app.powerbi.com/groups/a8c24873-6279-4823-8e43-1cf65d9ec5f3/reports/570bfd83-9e90-438b-b3d4-cbe515f2bdf4/5eef1e60c06db1b02b08?experience=power-b
+
